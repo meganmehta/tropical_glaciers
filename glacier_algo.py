@@ -17,14 +17,13 @@ wet["Glacier Type"] = "wet"
 glaciers = [dry, wet]
 allData = pd.concat(glaciers)
 
-
-zmid_vals = allData[allData.columns[10:]].to_numpy() #dataset with just the area values at each zmid point
+zmid_vals = allData[allData.columns[10:85]].to_numpy() #dataset with just the area values at each zmid point
 area_vals = allData['Area'].to_numpy() #only area values of each glacier 
 zmed_val = allData['Zmed'].to_numpy() #only zmed values for each glacier 
 
-zmid_values = allData.columns[10:].astype(int).to_numpy() #list of all zmid value points 
+zmid_values = allData.columns[10:85].to_numpy() #list of all zmid value points 
 
-glacier_value = "RGI60-" + input("Enter the glacier RGIId that you want to view: ")
+glacier_value = "RGI60-" + str(input("Enter the glacier RGIId that you want to view: "))
 print("Glacier ID: ", glacier_value)
 
 corresponding_val = 0
@@ -44,12 +43,15 @@ matching_row = zmid_vals[corresponding_val]
 input_AAR = float(input("Enter the accumulation area ratio: "))
 print("AAR: ", input_AAR)
 
+
 matching_row_area = []
-for item_ratio in matching_row:
-    item_area = item_ratio * selected_glacier_area
+for item_area in matching_row:
+    #item_area = item_ratio * selected_glacier_area.astype(int)
     matching_row_area.append(item_area)
 
-matching_row_a = np.asarray(matching_row_area)
+matching_row_a = np.array(matching_row_area).astype(float)
+zmid_values = zmid_values.astype(float)
+
 calculated_equilibrium = np.interp(1-input_AAR, (matching_row_a.cumsum()/selected_glacier_area), zmid_values) 
 print("Calculated equilibrium elevation: ", calculated_equilibrium)
 
@@ -72,7 +74,11 @@ if true_ELA_val > last_key - 50:
 elif true_ELA_val < calculated_equilibrium:
         print("Glacier is growing overtime. No net loss.")
 
-#actual for loop running through 
+algorithm = pd.DataFrame.from_dict(updated_plot_data, orient='index').T
+range_of_glacier = list(updated_plot_data.keys())
+
+#maybe include new calculated equilibrium and new area for each run through 
+#percent of starting area, and add new area in dataframe 
 while true_ELA_val > 0 and calculated_equilibrium > 0:
     if true_ELA_val > calculated_equilibrium and true_ELA_val < last_key - 50:
         if len(updated_plot_data) > 1:
@@ -82,10 +88,21 @@ while true_ELA_val > 0 and calculated_equilibrium > 0:
             row_vals = np.asarray(list(updated_plot_data.values()))
             new_area = row_vals.sum()
             calculated_equilibrium = np.interp(1-input_AAR, (row_vals.cumsum()/new_area), dict_keys)
+            algorithm = algorithm.append(pd.DataFrame.from_dict(updated_plot_data, orient='index').T)
             print("New calculated equilibrium is:", calculated_equilibrium)
     else:
-        print("Committed area loss:", selected_glacier_area - new_area)
+        area_loss = selected_glacier_area - new_area
+        print("Committed area loss:", area_loss, "km^2")
+        percent_loss = (area_loss/selected_glacier_area) * 100
+        print("Percent loss: ", percent_loss, "%")
         print("End")
         break
-
+ 
+algorithm.fillna(0)
+algorithm = algorithm.T
+algorithm['count'] = algorithm.reset_index().index
+algo_iterations = algorithm['count'].to_list()
+fig = px.bar(algorithm.T, x=range_of_glacier, y=algorithm.columns, animation_frame=algo_iterations, animation_group=algorithm.columns, 
+range_y=[0,2])
+fig.show()
 # %%

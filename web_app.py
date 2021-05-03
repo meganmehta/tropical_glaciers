@@ -10,6 +10,8 @@ import re
 import pandas as pd
 import os 
 
+
+#version Python 3.7.2
 current_dir = os.getcwd() #expected output = 'Users/*your username*
 #if you changed output file from data_modifications.py, make sure to change it here too!
 file_extension = "/Desktop/tropical_glaciers/data/data_modifications_output.csv"
@@ -24,9 +26,17 @@ app = dash.Dash(__name__)
 server = app.server
 
 #IQR v. Median Elevation - add drop down for wet v. dry v. all
-fig2 = px.scatter(allData, x = "Median Elevation", y = "Interquartile Range",
-                 size = "Area", color = "Number of Cells filled for each glacier", hover_name="RGIId",
-                 log_x = True, size_max=60)
+#fig2 = px.scatter(allData, x = "Median Elevation", y = "Interquartile Range",
+                 #size = "Area", color = "Number of Cells filled for each glacier", hover_name="RGIId",
+                 #log_x = True, size_max=60)
+
+fig2 = go.Figure()
+
+for glacierType in ['Wet', 'Dry']:
+    df = allData[allData["Glacier Type"] == glacierType]
+    fig2.add_trace(go.Scatter(x=allData["Median Elevation"], y=allData["Interquartile Range"], line={}, name=glacierType))
+
+
 
 
 #Map with wet and dry glaciers - add drop down for wet v. dry v. all 
