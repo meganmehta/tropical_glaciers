@@ -8,22 +8,30 @@ import plotly.graph_objs as go
 import plotly.express as px 
 import re
 import pandas as pd
+import os 
 
-dry = pd.read_csv("/Users/meganmehta/Desktop/research/dry_glacier_output.csv")
-wet = pd.read_csv("/Users/meganmehta/Desktop/research/wet_glacier_output.csv")
+current_dir = os.getcwd() #expected output = 'Users/*your username*
+#if you changed output file from data_modifications.py, make sure to change it here too!
+file_extension = "/Desktop/tropical_glaciers/data/data_modifications_output.csv"
+filepath = current_dir + file_extension
+allData = pd.read_csv(filepath)
+
+dry = allData.loc[allData['Glacier Type'] == "Dry"]
+wet = allData.loc[allData['Glacier Type'] == "Wet"]
 
 # Set up the app
 app = dash.Dash(__name__)
 server = app.server
 
-#prelim data analysis - iqr v. median elevation
-fig2 = px.scatter(dry, x="Median Elevation", y="Interquartile Range",
-                 size="Area", color="Number of Cells filled for each glacier", hover_name="RGIId",
-                 log_x=True, size_max=60)
+#IQR v. Median Elevation - add drop down for wet v. dry v. all
+fig2 = px.scatter(allData, x = "Median Elevation", y = "Interquartile Range",
+                 size = "Area", color = "Number of Cells filled for each glacier", hover_name="RGIId",
+                 log_x = True, size_max=60)
 
-#map with points displaying wet and dry glaciers (ADD WET GLACIERS)
-fig = px.scatter_mapbox(dry, lat="CenLat", lon="CenLon", hover_name="RGIId", hover_data=["Zmed", "Area"],
-                        color_discrete_sequence=["fuchsia"], zoom=3, height=1000)
+
+#Map with wet and dry glaciers - add drop down for wet v. dry v. all 
+fig = px.scatter_mapbox(allData, lat="CenLat", lon="CenLon", hover_name="RGIId", hover_data=["Zmed", "Area"],
+                        color_discrete_sequence=["blue"], zoom=3, height=1000)
 
 fig.update_layout(
     mapbox_style="white-bg",
@@ -38,10 +46,6 @@ fig.update_layout(
         }
       ])
 
-#histogram of distribution of each individual glacier (have user select glacier from drop-down and populate)
-fig3 = px.histogram(dry, x='Equilibrium Height')
-
-
 #main components in HTML 
 app.layout = html.Div(children=[
     # All elements from the top of the page
@@ -53,7 +57,7 @@ app.layout = html.Div(children=[
         '''),
 
         dcc.Graph(
-        id='median_elevation_v_iqr',
+        id ='median_elevation_v_iqr',
         figure=fig2
     ), 
     ]),
@@ -89,6 +93,7 @@ app.layout = html.Div(children=[
     ]),
     
 ])
+
 
 if __name__ == "__main__":
     app.run_server(debug=True)

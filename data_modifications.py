@@ -2,6 +2,9 @@ import pandas as pd
 import csv 
 import numpy as np 
 import os 
+import geopy
+from geopy.geocoders import Nominatim
+from geopy.extra.rate_limiter import RateLimiter
 
 #figure out dynamic filepaths 
 current_dir = os.getcwd() #expected output should be /Users/*your username*
@@ -16,8 +19,8 @@ wet_filepath = current_dir + wet_extension
 dry = pd.read_csv(dry_filepath)
 wet = pd.read_csv(wet_filepath)
 
-dry["Glacier Type"] = "dry"
-wet["Glacier Type"] = "wet"
+dry["Glacier Type"] = "Dry"
+wet["Glacier Type"] = "Wet"
 
 glaciers = [dry, wet]
 
@@ -104,6 +107,7 @@ allData['Interquartile Range'] = allData_interquartile_range
 allData['Number of Cells filled for each glacier'] = allData_filled_cells
 allData['Height with greatest area'] = allData_max_point
 allData['Height with lowest area'] = allData_min_point
+
 
 #change output file to whatever name you choose!
 endFile_extension = "/Desktop/tropical_glaciers/data/data_modifications_output.csv"
