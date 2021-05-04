@@ -35,10 +35,28 @@ zmid_values = allData[allData.columns[10:85]]
 allData_matrix = zmid_values.to_numpy()
 
 zmid_numbers = allData.columns[10:85].astype(int).to_numpy()
-allData_areas = allData['Area'].to_numpy()
+allData_areas = list(allData['Area'])
 
 #calculates mean elevation at each zmid point 
 total_areas = []
+count = 0
+for row in allData_matrix:
+    means = []
+    for number in row:
+        area_elevation = number * allData_areas[count]
+        means.append(area_elevation)
+    total_areas.append(means)
+    count +=1
+
+#glaciers with acutal area value instead of ratio
+glacier_area_vals = pd.DataFrame(total_areas, columns=zmid_numbers)
+#columns 1-10 on allData
+glacier_info = allData[allData.columns[0:10]]
+glacier_types = allData[allData.columns[85]]
+#revised allData that includes the actual area value at every elevation point 
+allData = pd.concat([glacier_info, glacier_area_vals, glacier_types], axis=1, join='inner')
+#calculates mean elevation at each zmid point 
+total_elevations = []
 for row in allData_matrix:
     zmid_num = 3025
     means = []
@@ -49,18 +67,10 @@ for row in allData_matrix:
             zmid_num+=50
         else:
             break
-    total_areas.append(means)
-
-#glaciers with acutal area value instead of ratio
-glacier_area_vals = pd.DataFrame(total_areas, columns=zmid_numbers)
-#columns 1-10 on allData
-glacier_info = allData[allData.columns[0:10]]
-glacier_types = allData[allData.columns[85]]
-#revised allData that includes the actual area value at every elevation point 
-allData = pd.concat([glacier_info, glacier_area_vals, glacier_types], axis=1, join='inner')
+    total_elevations.append(means)
 
 total_mean_elevation = []
-for glacier in total_areas:
+for glacier in total_elevations:
     mean_sum = 0
     for elevation in glacier:
         mean_sum+=elevation
