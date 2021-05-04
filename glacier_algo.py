@@ -5,17 +5,14 @@ import pandas as pd
 import csv 
 import numpy as np
 import plotly.express as px
+import os 
 
-#trying to merge files together 
-dry = pd.read_csv("/Users/meganmehta/Desktop/research/Dry_Region_RGI_Data_Complete.csv")
-wet = pd.read_csv("/Users/meganmehta/Desktop/research/Wet_Region_RGI_Data_Complete.csv")
-np.set_printoptions(threshold=np.inf)
-
-dry["Glacier Type"] = "dry"
-wet["Glacier Type"] = "wet"
-
-glaciers = [dry, wet]
-allData = pd.concat(glaciers)
+#version Python 3.7.2
+current_dir = os.getcwd() #expected output = 'Users/*your username*
+#if you changed output file from data_modifications.py, make sure to change it here too!
+file_extension = "/Desktop/tropical_glaciers/data/data_modifications_output.csv"
+filepath = current_dir + file_extension
+allData = pd.read_csv(filepath)
 
 zmid_vals = allData[allData.columns[10:85]].to_numpy() #dataset with just the area values at each zmid point
 area_vals = allData['Area'].to_numpy() #only area values of each glacier 

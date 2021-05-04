@@ -2,10 +2,11 @@ import pandas as pd
 import csv 
 import numpy as np 
 import os 
-import geopy
-from geopy.geocoders import Nominatim
-from geopy.extra.rate_limiter import RateLimiter
+#import geopy
+#from geopy.geocoders import Nominatim
+#from geopy.extra.rate_limiter import RateLimiter
 
+#run in Python 3.7.2
 #figure out dynamic filepaths 
 current_dir = os.getcwd() #expected output should be /Users/*your username*
 
@@ -113,3 +114,4 @@ allData['Height with lowest area'] = allData_min_point
 endFile_extension = "/Desktop/tropical_glaciers/data/data_modifications_output.csv"
 end_filepath = current_dir + endFile_extension
 allData.to_csv(end_filepath)
+print("Done")
