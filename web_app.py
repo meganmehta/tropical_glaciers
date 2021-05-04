@@ -22,7 +22,7 @@ allData = pd.read_csv(filepath)
 dry = allData.loc[allData['Glacier Type'] == "Dry"]
 wet = allData.loc[allData['Glacier Type'] == "Wet"]
 
-zmid_values = allData.columns[10:85]
+zmid_values = allData.columns[11:85]
 
 #Dash App Setup 
 app = dash.Dash(__name__)
@@ -48,6 +48,7 @@ fig.update_layout(
 )
 
 #IQR v. Median Elevation 
+#area = thousandths place, round elevations + IQR  to whole number 
 fig2 = go.Figure(data=[
     go.Scatter(
         name="Dry Glaciers", 
@@ -147,13 +148,13 @@ fig2.update_layout(
 )
 
 #Individual Glacier Histograms (to see area distribution)
-fig3 = px.bar(allData,y="RGIId",x=zmid_values)
+glacier_ids = allData['RGIId'].unique()
 
 #main components in HTML 
 app.layout = html.Div(children=[
     # All elements from the top of the page
     html.Div([
-        html.H1(children='Glaciers in south america!'),
+        html.H1(children='Glaciers in south america!', style={'color': 'Black', 'fontSize': 50, 'fontFamily':'Open Sans'}),
 
         html.Div(children='''
             overview of wet and dry glaciers 
@@ -174,20 +175,31 @@ app.layout = html.Div(children=[
             figure=fig2
         ), 
 
-        dcc.Dropdown(
-        id='id_dropdown',
-        options=[
-            {'label': i, 'value': i} for i in allData.RGIId.unique()
-            ], multi=True, placeholder='Select Glacier ID',
-        value=[allData.RGIId.min()]
-        ),
         dcc.Graph(
             id="single_glacier_area_distribution",
-            figure=fig3
         ),
+
+        dcc.Dropdown(
+            id='glacier-id-selector',
+            options=[{'label': i, 'value':i} for i in glacier_ids],
+            value='16.00010'
+        )
 
     ]),  
 ])
+
+@app.callback(
+    Output('single_glacier_area_distribution', 'figure'),
+    Input('glacier-id-selector', 'value'),
+)
+
+#print table, print total area and do percents + median elevation
+def update_graph(selected_glacier_id):
+    glacier_id_data = allData[allData['RGIId'] == selected_glacier_id]
+    zmid_values = glacier_id_data.columns[11:85].to_list()
+    filtered_data = glacier_id_data[glacier_id_data.columns[11:85]]
+    figure = px.bar(glacier_id_data, x=zmid_values, y=filtered_data.T)
+    return figure
 
 if __name__ == "__main__":
     app.run_server(debug=True)

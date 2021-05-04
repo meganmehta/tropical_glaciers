@@ -6,6 +6,8 @@ import csv
 import numpy as np
 import plotly.express as px
 import os 
+import plotly.graph_objs as go
+
 
 #version Python 3.7.2
 current_dir = os.getcwd() #expected output = 'Users/*your username*
@@ -74,6 +76,11 @@ range_of_glacier = list(updated_plot_data.keys())
 
 #maybe include new calculated equilibrium and new area for each run through 
 #percent of starting area, and add new area in dataframe 
+count = 0
+iterations_list = []
+#iterations_list.append(count)
+calculated_equilibriums = []
+difference_trueELA = []
 while true_ELA_val > 0 and calculated_equilibrium > 0:
     if true_ELA_val > calculated_equilibrium and true_ELA_val < last_key - 50:
         if len(updated_plot_data) > 1:
@@ -85,6 +92,11 @@ while true_ELA_val > 0 and calculated_equilibrium > 0:
             calculated_equilibrium = np.interp(1-input_AAR, (row_vals.cumsum()/new_area), dict_keys)
             algorithm = algorithm.append(pd.DataFrame.from_dict(updated_plot_data, orient='index').T)
             print("New calculated equilibrium is:", calculated_equilibrium)
+            count += 1
+            iterations_list.append(count)
+            calculated_equilibriums.append(calculated_equilibrium)
+            difference = true_ELA_val - calculated_equilibrium
+            difference_trueELA.append(difference)
     else:
         area_loss = selected_glacier_area - new_area
         print("Committed area loss:", area_loss, "km^2")
@@ -92,12 +104,26 @@ while true_ELA_val > 0 and calculated_equilibrium > 0:
         print("Percent loss: ", percent_loss, "%")
         print("End")
         break
- 
+
+#true ela - equilibrium ela 
+#round elevation + differences 
+algo_equilibriums = list(zip(iterations_list, calculated_equilibriums, difference_trueELA))
+algorithm_iterations = pd.DataFrame(algo_equilibriums, columns=['Num of Iterations', 'Calculated Equilibriums', 'Difference between trueELA'])
+print(algorithm_iterations)
+print(difference_trueELA)
+
+fig = go.Figure()
+fig.add_trace(go.Scatter(
+    x='Num of Iterations', y='Calculated Equilibriums', mode='markers')
+)
+fig.add_trace(go.Scatter(
+    x='Num of Iterations', y='Difference between trueELA', mode='markers')
+)
+
+
 algorithm.fillna(0)
 algorithm = algorithm.T
-algorithm['count'] = algorithm.reset_index().index
-algo_iterations = algorithm['count'].to_list()
-fig = px.scatter(algorithm.T, x=range_of_glacier, y=algorithm.columns, animation_frame=algo_iterations, animation_group=algorithm.columns, 
+fig = px.scatter(algorithm.T, x=range_of_glacier, y=algorithm.columns, animation_frame=iterations_list, animation_group=algorithm.columns, 
 range_y=[0,2])
-fig.show()
+fig.show() 
 # %%

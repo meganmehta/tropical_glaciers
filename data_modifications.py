@@ -45,9 +45,9 @@ for row in allData_matrix:
     for number in row:
         area_elevation = number * allData_areas[count]
         means.append(area_elevation)
+    print(allData_areas[count])
     total_areas.append(means)
     count +=1
-
 #glaciers with acutal area value instead of ratio
 glacier_area_vals = pd.DataFrame(total_areas, columns=zmid_numbers)
 #columns 1-10 on allData
